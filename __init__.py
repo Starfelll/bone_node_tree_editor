@@ -45,8 +45,9 @@ _g_bone_palette_to_index_map = {
 
 class BoneNodeTree(NodeTree):
     bl_idname = "bnte.BoneNodeTreeEditor"
-    bl_label = "Bone node tree"
-    bl_icon = "OUTLINER_OB_ARMATURE"
+    bl_label = "Good to the bone"
+    #bl_icon = "OUTLINER_OB_ARMATURE"
+    bl_icon = "BONE_DATA"
     #bl_icon = "NODETREE"
 
 class BoneNode(Node):
@@ -128,7 +129,7 @@ class BoneNode(Node):
             if self._set_bone_parent(None): pass
     
 
-def _bone_node_tree_of(context: Context, name: str = "Bone node tree") -> NodeTree:
+def _bone_node_tree_of(context: Context, name: str= BoneNodeTree.bl_label) -> NodeTree:
     node_groups = bpy.data.node_groups
     for node_group_name in node_groups:
         if node_group_name.name == name:
@@ -364,15 +365,15 @@ def _space_node_editor_draw():
         is_dirty = context.active_node.select != _old_nt.active_select
 
     if not is_dirty:
+        match_num = 0
         for sel_node in context.selected_nodes:
-            if sel_node.name not in _old_nt.selected:
+            if sel_node.name in _old_nt.selected:
+                match_num += 1
+            else:
                 is_dirty = True
                 break
-    if not is_dirty:
-        for old_sel_node_name in _old_nt.selected:
-            if old_sel_node_name not in context.selected_nodes:
-                is_dirty = True
-                break
+        if match_num != len(_old_nt.selected):
+            is_dirty = True
 
     if is_dirty:
         #print("Bone node tree is dirty")
