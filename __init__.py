@@ -88,6 +88,7 @@ class BoneNode(Node):
                         return False
             else:
                 bone = armature.edit_bones.get(self.name)
+                bone_parent = None
                 if parent:
                     bone_parent = armature.edit_bones.get(parent)
                 if bone:
