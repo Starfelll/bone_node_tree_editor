@@ -15,6 +15,7 @@ import bpy
 from bpy.types import NodeTree, Node, Operator, Context, Armature, Bone, Nodes
 from bpy.props import BoolProperty
 import mathutils
+from datetime import datetime
 
 _g_node_edit_lock = False
 _g_bone_palette_to_index_map = {
@@ -354,7 +355,7 @@ def _space_node_editor_draw():
     if not _is_in_bone_node_tree(context):
         return
     
-    if context.active_node:
+    if context.active_node and not context.active_node.hide:
         context.active_node.hide = True
     
     if _old_nt.active != context.active_node:
@@ -367,9 +368,14 @@ def _space_node_editor_draw():
             if sel_node.name not in _old_nt.selected:
                 is_dirty = True
                 break
+    if not is_dirty:
+        for old_sel_node_name in _old_nt.selected:
+            if old_sel_node_name not in context.selected_nodes:
+                is_dirty = True
+                break
 
     if is_dirty:
-        #print("Bone Node Tree is Dirty")
+        #print("Bone node tree is dirty")
         armature = _armature_of(context)
         if armature is not None:
             if context.mode == "EDIT_ARMATURE":
