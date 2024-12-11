@@ -5,7 +5,7 @@ bl_info = {
     "version": (1, 0),
     "blender": (3, 6, 0),
     #"location": "View3D > Add > Mesh",
-    #"doc_url": "",
+    "doc_url": "https://www.bilibili.com/video/BV15AqjYiE2Y",
     #"tracker_url": "",
     "support": "COMMUNITY",
     "category": "Node",
@@ -215,6 +215,7 @@ class OT_UpdateBoneNodeTree(Operator):
     def execute(self, context):
         node_tree = _bone_node_tree_of(context)
         nodes = node_tree.nodes
+        nodes.clear()
 
         armature = _armature_of(context)
         if armature is None:
@@ -226,8 +227,6 @@ class OT_UpdateBoneNodeTree(Operator):
         spacing_y = 10
         global _g_node_edit_lock
         _g_node_edit_lock = True
-        bone_num = 0
-        node_num = len(nodes)
 
         if context.mode == "EDIT_ARMATURE":
             bones = armature.edit_bones
@@ -235,11 +234,7 @@ class OT_UpdateBoneNodeTree(Operator):
             bones = armature.bones
         
         for bone in bones:
-            bone_num += 1
-            if bone_num <= node_num:
-                node = nodes[bone_num-1]
-            else:
-                node = nodes.new(BoneNode.bl_idname)
+            node = nodes.new(BoneNode.bl_idname)
             node.name = bone.name
             node.width = len(node.name) * 8
             node.select = bone.select
@@ -247,16 +242,9 @@ class OT_UpdateBoneNodeTree(Operator):
             _sync_bone_color_to_node(bone.color, node)
             if bones.active == bone:
                 nodes.active = node
-            
-        if bone_num < node_num:
-            unused_nodes = []
-            for unused_node in range(bone_num, node_num):
-                unused_nodes.append(nodes[unused_node])
-            for unused_node in unused_nodes:
-                nodes.remove(unused_node)
-        
 
         root_bones = []
+        node_tree.links.clear()
         for bone in bones:
             node = nodes.get(bone.name)
             if bone.parent:
@@ -359,9 +347,15 @@ def _space_node_editor_draw():
     if context.active_node and not context.active_node.hide:
         context.active_node.hide = True
     
-    if _old_nt.active != context.active_node:
+    if context.active_node is None:
+        if _old_nt.active != None:
+            is_dirty = True
+    elif _old_nt.active is None:
+        if context.active_node != None:
+            is_dirty = True
+    elif _old_nt.active != context.active_node.name:
         is_dirty = True
-    elif context.active_node != None and _old_nt.active != None:
+    elif context.active_node == _old_nt.active:
         is_dirty = context.active_node.select != _old_nt.active_select
 
     if not is_dirty:
@@ -407,10 +401,10 @@ def _space_node_editor_draw():
                             context.object.vertex_groups.active_index = -1
                 else:
                     _old_nt.active_select = False
+                _old_nt.active = context.active_node.name
             else:
                 bones.active = None
-            _old_nt.active = context.active_node
-
+                _old_nt.active = None
     pass
 
 def _draw_pie(this: bpy.types.Menu, context: Context):
