@@ -2,7 +2,7 @@ bl_info = {
     "name": "Bone Node Tree Editor 🦴",
     #"description": "",
     "author": "Starfelll",
-    "version": (1, 0),
+    "version": (1, 1),
     "blender": (3, 6, 0),
     #"location": "View3D > Add > Mesh",
     "doc_url": "https://www.bilibili.com/video/BV15AqjYiE2Y",
